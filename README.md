@@ -18,7 +18,7 @@ The project consists of the following main components:
 
 - **`FlightEventsProducer`**: A Java application that produces records to Kafka. It can be run as a standalone process to send sample data.
 - **`FlightEventsConsumer`**: A Java application that consumes records from Kafka and logs them to the console.
-- **Apache Kafka**: The message broker that decouples the producer and consumer.
+- **Confluent Kafka**: The message broker that decouples the producer and consumer.
 - **Confluent Schema Registry**: Stores the Avro schemas used by the producer and consumer.
 
 The following Kafka topics are used:
