@@ -1,0 +1,156 @@
+{
+  "type": "record",
+  "namespace": "com.lftairline.kafka.avro",
+  "name": "PassengerCheckin",
+  "doc": "Represents a passenger check-in event for LFT Airline",
+  "fields": [
+    {
+      "name": "checkinId",
+      "type": "string",
+      "doc": "Unique check-in transaction identifier"
+    },
+    {
+      "name": "passengerId",
+      "type": "string",
+      "doc": "Unique passenger identifier"
+    },
+    {
+      "name": "flightId",
+      "type": "string",
+      "doc": "Flight identifier for this check-in"
+    },
+    {
+      "name": "bookingReference",
+      "type": "string",
+      "doc": "Booking reference/PNR code"
+    },
+    {
+      "name": "passengerName",
+      "type": {
+        "type": "record",
+        "name": "PassengerName",
+        "fields": [
+          {
+            "name": "firstName",
+            "type": "string",
+            "doc": "Passenger first name"
+          },
+          {
+            "name": "lastName",
+            "type": "string",
+            "doc": "Passenger last name"
+          },
+          {
+            "name": "middleName",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Passenger middle name (optional)"
+          }
+        ]
+      },
+      "doc": "Passenger name details"
+    },
+    {
+      "name": "checkinTime",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Check-in timestamp in epoch milliseconds"
+    },
+    {
+      "name": "checkinType",
+      "type": {
+        "type": "enum",
+        "name": "CheckinType",
+        "symbols": [
+          "ONLINE",
+          "MOBILE",
+          "KIOSK",
+          "COUNTER",
+          "CURBSIDE"
+        ]
+      },
+      "doc": "Type of check-in method used"
+    },
+    {
+      "name": "seatNumber",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Assigned seat number (e.g., 12A)"
+    },
+    {
+      "name": "class",
+      "type": {
+        "type": "enum",
+        "name": "TravelClass",
+        "symbols": [
+          "ECONOMY",
+          "PREMIUM_ECONOMY",
+          "BUSINESS",
+          "FIRST"
+        ]
+      },
+      "doc": "Travel class/cabin"
+    },
+    {
+      "name": "frequentFlyerNumber",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Frequent flyer membership number (optional)"
+    },
+    {
+      "name": "baggageCount",
+      "type": "int",
+      "default": 0,
+      "doc": "Number of checked bags"
+    },
+    {
+      "name": "baggageIds",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "List of baggage tag identifiers"
+    },
+    {
+      "name": "specialRequests",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "Special service requests (e.g., wheelchair, meal preferences)"
+    },
+    {
+      "name": "boardingGroup",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Assigned boarding group (e.g., Group 1, Zone A)"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "CheckinStatus",
+        "symbols": [
+          "COMPLETED",
+          "PENDING_DOCS",
+          "PENDING_PAYMENT",
+          "CANCELLED",
+          "NO_SHOW"
+        ]
+      },
+      "doc": "Check-in status"
+    },
+    {
+      "name": "eventTimestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "When this event was generated"
+    }
+  ]
+}

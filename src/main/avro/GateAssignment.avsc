@@ -1,0 +1,152 @@
+{
+  "type": "record",
+  "namespace": "com.lftairline.kafka.avro",
+  "name": "GateAssignment",
+  "doc": "Represents a gate assignment event for LFT Airline",
+  "fields": [
+    {
+      "name": "assignmentId",
+      "type": "string",
+      "doc": "Unique gate assignment identifier"
+    },
+    {
+      "name": "flightId",
+      "type": "string",
+      "doc": "Flight identifier for this gate assignment"
+    },
+    {
+      "name": "aircraftId",
+      "type": "string",
+      "doc": "Aircraft registration number"
+    },
+    {
+      "name": "airport",
+      "type": "string",
+      "doc": "IATA code of the airport (e.g., JFK)"
+    },
+    {
+      "name": "gate",
+      "type": "string",
+      "doc": "Gate number/identifier (e.g., A15, B22)"
+    },
+    {
+      "name": "terminal",
+      "type": "string",
+      "doc": "Terminal identifier (e.g., Terminal 1, T3)"
+    },
+    {
+      "name": "assignmentTime",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+       },
+      "doc": "When the gate was assigned in epoch milliseconds"
+    },
+    {
+      "name": "scheduledTime",
+      "type": {
+        "type": "long",
+         "logicalType": "timestamp-millis"
+      },
+      "doc": "Scheduled departure/arrival time for this gate"
+    },
+    {
+      "name": "estimatedTime",
+      "type": ["null", {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }],
+      "default": null,
+      "doc": "Estimated departure/arrival time (nullable)"
+    },
+    {
+      "name": "assignmentType",
+      "type": {
+        "type": "enum",
+        "name": "AssignmentType",
+        "symbols": [
+          "DEPARTURE",
+          "ARRIVAL",
+          "TURNAROUND"
+        ]
+      },
+      "doc": "Type of gate assignment (departure, arrival, or both)"
+    },
+    {
+      "name": "previousGate",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Previous gate if this is a reassignment (nullable)"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "GateStatus",
+        "symbols": [
+          "ASSIGNED",
+          "CONFIRMED",
+          "CHANGED",
+          "OCCUPIED",
+          "AVAILABLE",
+          "MAINTENANCE",
+          "CLOSED"
+        ]
+      },
+      "doc": "Current gate status"
+    },
+    {
+      "name": "gateEquipment",
+      "type": {
+        "type": "record",
+        "name": "GateEquipment",
+        "fields": [
+          {
+            "name": "jetBridge",
+            "type": "boolean",
+            "default": false,
+            "doc": "Whether gate has a jet bridge"
+          },
+          {
+            "name": "groundPower",
+            "type": "boolean",
+            "default": false,
+            "doc": "Whether gate has ground power available"
+          },
+          {
+            "name": "airConditioning",
+            "type": "boolean",
+            "default": false,
+            "doc": "Whether gate has pre-conditioned air"
+          }
+        ]
+      },
+      "doc": "Gate equipment and capabilities"
+    },
+    {
+      "name": "expectedPassengers",
+      "type": "int",
+      "doc": "Expected number of passengers for this flight"
+    },
+    {
+      "name": "aircraftType",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Aircraft type (e.g., B737, A320)"
+    },
+    {
+      "name": "notes",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Additional notes or instructions (nullable)"
+    },
+    {
+      "name": "eventTimestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "When this event was generated"
+    }
+  ]
+}
