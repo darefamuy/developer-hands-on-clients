@@ -16,120 +16,36 @@ This project contains Java-based Kafka clients that demonstrate a simple event-d
 
 The project consists of the following main components:
 
-- **`FlightEventsProducer`**: A Java application that produces records to Kafka. It can be run as a standalone process to send sample data.
-- **`FlightEventsConsumer`**: A Java application that consumes records from Kafka and logs them to the console.
+- **`AirlineEventsProducer`**: A Java application that produces records to Kafka. It can be run as a standalone process to send sample data.
+- **`AirlineEventsConsumer`**: A Java application that consumes records from Kafka and logs them to the console.
 - **Apache Kafka**: The message broker that decouples the producer and consumer.
 - **Confluent Schema Registry**: Stores the Avro schemas used by the producer and consumer.
 
 The following Kafka topics are used:
-- `flight-departures`: For events related to flight status changes.
-- `baggage-tracking`: For events related to baggage status changes.
+- `flight-arrivals`: For events related to flight status changes.
+- `gate-assignment`: For events related to gate assignments for flights.
+- `passenger-checkin`: For events related to passenger-checkins
 
+## Glossary
 ## Data Models
 
 The data models are defined using Avro schemas in the `src/main/avro` directory.
 
-- **`FlightDeparture.avsc`**: Represents a flight departure event, including flight ID, airport details, status, and timestamps.
-- **`BaggageTracking.avsc`**: Represents a baggage tracking event, including bag ID, flight ID, status, and location.
+- **`FlightArrival.avsc`**: Represents a flight arrival event, including flight ID, airport details, status, and timestamps.
+- **`GateAssignment.avsc`**: Represents a gate assignment event, including assignment ID, flight ID, gate, and timestamps.
+- **`PassengerCheckin.avsc`**: Represents a passenger check-in event, including check-in ID, passenger ID, flight ID, and timestamps.
 
 Java classes are automatically generated from these schemas during the build process.
 
-## Prerequisites
+### Flight Arrival Schema
 
-Before you begin, ensure you have the following installed:
-
-- **Java 11** or later
-
-Additionally, you will need access to a running Apache Kafka cluster and Confluent Schema Registry. The client applications are configured to connect to `localhost:9092` for Kafka brokers and `http://localhost:8081` for the Schema Registry by default.
-
-## Getting Started
-
-Follow these steps to get the project up and running on your local machine.
-
-### 1. Clone the Repository
-
-```bash
-git clone <repository-url>
-cd developer-hands-on-clients
-```
-
-### 2. Build the Project
-
-Use the included Gradle wrapper to build the project. This will also trigger the `generateAvro` task to compile the Avro schemas into Java source files.
-
-```bash
-./gradlew build
-```
-
-You can also manually generate the Avro classes if needed:
-
-```bash
-./gradlew generateAvro
-```
-
-## Usage
-
-The producer and consumer applications can be run using custom Gradle tasks. It's recommended to run them in separate terminal windows to observe the interaction.
-
-### Run the Consumer
-
-Start the consumer first to ensure it's ready to receive messages.
-
-```bash
-./gradlew runConsumer
-```
-
-The consumer will start, subscribe to the topics, and begin polling for messages. You will see log output indicating it has started.
-
-### Run the Producer
-
-In a new terminal, run the producer. It will send a predefined set of sample `FlightDeparture` and `BaggageTracking` events and then exit.
-
-```bash
-./gradlew runProducer
-```
-
-After the producer runs, you should see log output in the consumer's terminal window showing the messages it has received and processed.
-
-## Configuration
-
-The Kafka client configuration is centralized in the `com.lftairline.kafka.config.KafkaConfiguration` class.
-
-- **Kafka Brokers**: `BOOTSTRAP_SERVERS` is currently set to `localhost:9092`. 
-- **Schema Registry**: `SCHEMA_REGISTRY_URL` is currently set to `http://localhost:8081`.
-- **Topics**: Topic names (`flight-departures`, `baggage-tracking`) are also defined here.
-
-If you may need to connect to a  Kafka cluster, you can modify the constants in this file.
-Please change both the Kafka bootstrapServer endpoint and schema registry URL to the ones provided for this training.
-
-## Running Tests
-
-To run the unit and integration tests for the project, execute the following command:
-
-```bash
-./gradlew test
-```
-
-## Running in Docker
-
-To spin up a local Kafka cluster in KRaft mode with a local schema registry and execute the command below.
-Once the services are up and running, you can then re-configure the application with appropriate local addresses and re-run it.
-
-```bash
-docker-compose up -d
-```
-
-## Glossary
-
-### Flight Departure Schema
-
-src/main/avro/FlightDeparture.avsc
+`src/main/avro/FlightArrival.avsc`
 ```json
 {
   "type": "record",
   "namespace": "com.lftairline.kafka.avro",
-  "name": "FlightDeparture",
-  "doc": "Represents a flight departure event for LFT Airline",
+  "name": "FlightArrival",
+  "doc": "Represents a flight arrival event for LFT Airline",
   "fields": [
     {
       "name": "flightId",
@@ -152,49 +68,73 @@ src/main/avro/FlightDeparture.avsc
       "doc": "IATA code of arrival airport (e.g., LAX)"
     },
     {
-      "name": "scheduledDeparture",
+      "name": "scheduledArrival",
       "type": {
         "type": "long",
         "logicalType": "timestamp-millis"
       },
-      "doc": "Scheduled departure time in epoch milliseconds"
+      "doc": "Scheduled arrival time in epoch milliseconds"
     },
     {
-      "name": "actualDeparture",
+      "name": "estimatedArrival",
       "type": ["null", {
         "type": "long",
         "logicalType": "timestamp-millis"
       }],
       "default": null,
-      "doc": "Actual departure time in epoch milliseconds (nullable)"
+      "doc": "Estimated arrival time in epoch milliseconds (nullable)"
+    },
+    {
+      "name": "actualArrival",
+      "type": ["null", {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }],
+      "default": null,
+      "doc": "Actual arrival time in epoch milliseconds (nullable)"
     },
     {
       "name": "status",
       "type": {
         "type": "enum",
-        "name": "FlightStatus",
+        "name": "ArrivalStatus",
         "symbols": [
           "SCHEDULED",
-          "BOARDING",
-          "DEPARTED",
-          "IN_FLIGHT",
+          "EN_ROUTE",
+          "APPROACHING",
+          "LANDED",
           "ARRIVED",
+          "TAXIING",
+          "AT_GATE",
           "DELAYED",
+          "DIVERTED",
           "CANCELLED"
         ]
       },
-      "doc": "Current flight status"
+      "doc": "Current arrival status"
     },
     {
       "name": "gate",
       "type": ["null", "string"],
       "default": null,
-      "doc": "Departure gate (nullable)"
+      "doc": "Arrival gate (nullable)"
     },
     {
-      "name": "passengersBooked",
+      "name": "terminal",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Arrival terminal (nullable)"
+    },
+    {
+      "name": "baggageClaim",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Baggage claim carousel number (nullable)"
+    },
+    {
+      "name": "passengersOnBoard",
       "type": "int",
-      "doc": "Number of passengers booked on this flight"
+      "doc": "Number of passengers on board"
     },
     {
       "name": "eventTimestamp",
@@ -208,65 +148,313 @@ src/main/avro/FlightDeparture.avsc
 }
 ```
 
-### Baggage Tracking Schema
+### Gate Assignment Schema
 
-src/main/avro/BaggageTracking.avsc
+`src/main/avro/GateAssignment.avsc`
 ```json
 {
   "type": "record",
   "namespace": "com.lftairline.kafka.avro",
-  "name": "BaggageTracking",
-  "doc": "Represents a baggage tracking event for LFT Airline",
+  "name": "GateAssignment",
+  "doc": "Represents a gate assignment event for LFT Airline",
   "fields": [
     {
-      "name": "bagId",
+      "name": "assignmentId",
       "type": "string",
-      "doc": "Unique baggage identifier"
+      "doc": "Unique gate assignment identifier"
     },
     {
       "name": "flightId",
       "type": "string",
-      "doc": "Associated flight identifier"
+      "doc": "Flight identifier for this gate assignment"
     },
     {
-      "name": "passengerId",
+      "name": "aircraftId",
       "type": "string",
-      "doc": "Passenger identifier who owns this bag"
+      "doc": "Aircraft registration number"
+    },
+    {
+      "name": "airport",
+      "type": "string",
+      "doc": "IATA code of the airport (e.g., JFK)"
+    },
+    {
+      "name": "gate",
+      "type": "string",
+      "doc": "Gate number/identifier (e.g., A15, B22)"
+    },
+    {
+      "name": "terminal",
+      "type": "string",
+      "doc": "Terminal identifier (e.g., Terminal 1, T3)"
+    },
+    {
+      "name": "assignmentTime",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+       },
+      "doc": "When the gate was assigned in epoch milliseconds"
+    },
+    {
+      "name": "scheduledTime",
+      "type": {
+        "type": "long",
+         "logicalType": "timestamp-millis"
+      },
+      "doc": "Scheduled departure/arrival time for this gate"
+    },
+    {
+      "name": "estimatedTime",
+      "type": ["null", {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }],
+      "default": null,
+      "doc": "Estimated departure/arrival time (nullable)"
+    },
+    {
+      "name": "assignmentType",
+      "type": {
+        "type": "enum",
+        "name": "AssignmentType",
+        "symbols": [
+          "DEPARTURE",
+          "ARRIVAL",
+          "TURNAROUND"
+        ]
+      },
+      "doc": "Type of gate assignment (departure, arrival, or both)"
+    },
+    {
+      "name": "previousGate",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Previous gate if this is a reassignment (nullable)"
     },
     {
       "name": "status",
       "type": {
         "type": "enum",
-        "name": "BaggageStatus",
+        "name": "GateStatus",
         "symbols": [
-          "CHECKED_IN",
-          "IN_TRANSIT",
-          "LOADED",
-          "IN_FLIGHT",
-          "UNLOADED",
-          "CLAIMED",
-          "LOST"
+          "ASSIGNED",
+          "CONFIRMED",
+          "CHANGED",
+          "OCCUPIED",
+          "AVAILABLE",
+          "MAINTENANCE",
+          "CLOSED"
         ]
       },
-      "doc": "Current baggage status"
+      "doc": "Current gate status"
     },
     {
-      "name": "location",
-      "type": "string",
-      "doc": "Current location (airport code or facility)"
+      "name": "gateEquipment",
+      "type": {
+        "type": "record",
+        "name": "GateEquipment",
+        "fields": [
+          {
+            "name": "jetBridge",
+            "type": "boolean",
+            "default": false,
+            "doc": "Whether gate has a jet bridge"
+          },
+          {
+            "name": "groundPower",
+            "type": "boolean",
+            "default": false,
+            "doc": "Whether gate has ground power available"
+          },
+          {
+            "name": "airConditioning",
+            "type": "boolean",
+            "default": false,
+            "doc": "Whether gate has pre-conditioned air"
+          }
+        ]
+      },
+      "doc": "Gate equipment and capabilities"
     },
     {
-      "name": "weightKg",
-      "type": "double",
-      "doc": "Weight of baggage in kilograms"
+      "name": "expectedPassengers",
+      "type": "int",
+      "doc": "Expected number of passengers for this flight"
     },
     {
-      "name": "lastScanTime",
+      "name": "aircraftType",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Aircraft type (e.g., B737, A320)"
+    },
+    {
+      "name": "notes",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Additional notes or instructions (nullable)"
+    },
+    {
+      "name": "eventTimestamp",
       "type": {
         "type": "long",
         "logicalType": "timestamp-millis"
       },
-      "doc": "Last scan timestamp in epoch milliseconds"
+      "doc": "When this event was generated"
+    }
+  ]
+}
+```
+
+### Passenger Check-in Schema
+
+`src/main/avro/PassengerCheckin.avsc`
+```json
+{
+  "type": "record",
+  "namespace": "com.lftairline.kafka.avro",
+  "name": "PassengerCheckin",
+  "doc": "Represents a passenger check-in event for LFT Airline",
+  "fields": [
+    {
+      "name": "checkinId",
+      "type": "string",
+      "doc": "Unique check-in transaction identifier"
+    },
+    {
+      "name": "passengerId",
+      "type": "string",
+      "doc": "Unique passenger identifier"
+    },
+    {
+      "name": "flightId",
+      "type": "string",
+      "doc": "Flight identifier for this check-in"
+    },
+    {
+      "name": "bookingReference",
+      "type": "string",
+      "doc": "Booking reference/PNR code"
+    },
+    {
+      "name": "passengerName",
+      "type": {
+        "type": "record",
+        "name": "PassengerName",
+        "fields": [
+          {
+            "name": "firstName",
+            "type": "string",
+            "doc": "Passenger first name"
+          },
+          {
+            "name": "lastName",
+            "type": "string",
+            "doc": "Passenger last name"
+          },
+          {
+            "name": "middleName",
+            "type": ["null", "string"],
+            "default": null,
+            "doc": "Passenger middle name (optional)"
+          }
+        ]
+      },
+      "doc": "Passenger name details"
+    },
+    {
+      "name": "checkinTime",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Check-in timestamp in epoch milliseconds"
+    },
+    {
+      "name": "checkinType",
+      "type": {
+        "type": "enum",
+        "name": "CheckinType",
+        "symbols": [
+          "ONLINE",
+          "MOBILE",
+          "KIOSK",
+          "COUNTER",
+          "CURBSIDE"
+        ]
+      },
+      "doc": "Type of check-in method used"
+    },
+    {
+      "name": "seatNumber",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Assigned seat number (e.g., 12A)"
+    },
+    {
+      "name": "class",
+      "type": {
+        "type": "enum",
+        "name": "TravelClass",
+        "symbols": [
+          "ECONOMY",
+          "PREMIUM_ECONOMY",
+          "BUSINESS",
+          "FIRST"
+        ]
+      },
+      "doc": "Travel class/cabin"
+    },
+    {
+      "name": "frequentFlyerNumber",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Frequent flyer membership number (optional)"
+    },
+    {
+      "name": "baggageCount",
+      "type": "int",
+      "default": 0,
+      "doc": "Number of checked bags"
+    },
+    {
+      "name": "baggageIds",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "List of baggage tag identifiers"
+    },
+    {
+      "name": "specialRequests",
+      "type": {
+        "type": "array",
+        "items": "string"
+      },
+      "default": [],
+      "doc": "Special service requests (e.g., wheelchair, meal preferences)"
+    },
+    {
+      "name": "boardingGroup",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Assigned boarding group (e.g., Group 1, Zone A)"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "CheckinStatus",
+        "symbols": [
+          "COMPLETED",
+          "PENDING_DOCS",
+          "PENDING_PAYMENT",
+          "CANCELLED",
+          "NO_SHOW"
+        ]
+      },
+      "doc": "Check-in status"
     },
     {
       "name": "eventTimestamp",
