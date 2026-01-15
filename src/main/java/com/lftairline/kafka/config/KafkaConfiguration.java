@@ -24,8 +24,9 @@ public class KafkaConfiguration {
     private static final String SCHEMA_REGISTRY_URL = "http://localhost:8081";
     
     // Topic names
-    public static final String FLIGHT_DEPARTURES_TOPIC = "flight-departures";
-    public static final String BAGGAGE_TRACKING_TOPIC = "baggage-tracking";
+    public static final String FLIGHT_ARRIVALS_TOPIC = "flight-arrivals";
+    public static final String PASSENGER_CHECKIN_TOPIC = "passenger-checkin";
+    public static final String GATE_ASSIGNMENTS_TOPIC = "gate-assignments";
     
     /**
      * Create producer configuration with Avro serialization
