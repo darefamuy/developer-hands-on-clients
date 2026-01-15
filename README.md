@@ -112,7 +112,7 @@ To run the unit and integration tests for the project, execute the following com
 
 ## Running in Docker
 
-To spin up a local Kafka cluster in KRaft mode with a local schema registry and execute the command below.
+To spin up a local Kafka cluster in KRaft mode with a local schema registry, execute the command below.
 Once the services are up and running, you can then re-configure the application with appropriate local addresses and re-run it.
 
 ```bash
